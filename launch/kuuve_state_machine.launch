@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="state_machine_simple" pkg="mission_planner" type="state_machine_simple.py" output="screen">
+    <param name="probability" value="70.0" type="double"/>
+    <param name="standard_count" value="10" type="int"/>
+  </node>
+  <node name="smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen"/>
+</launch>
