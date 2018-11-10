@@ -8,11 +8,11 @@
   
 
   <node pkg="u_turn" name="u_turn" type="u_turn_path.py" output="screen">
-	  <param name="throttle" value="3" />
+	  <param name="throttle" value="5" />
 	  <param name="max_theta" value="45" />
-	  <param name="lateral_offset" type="double" value="5.0" /> <!-- car: 0.6 -->
+	  <param name="lateral_offset" type="double" value="4.0" /> <!-- car: 0.6 -->
 	  <param name="theta_error_factor" type="double" value="1.2" />
-	  <param name="lateral_error_factor" type="double" value="60.0" />
+	  <param name="lateral_error_factor" type="double" value="15.0" />
 	  <param name="right_steer_scale" type="double" value="1.5" />
 	  <param name="left_steer_offset" value="6" />
   </node>
