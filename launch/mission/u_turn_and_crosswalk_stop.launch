@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- U turn -->
+  <node pkg="laser_filters" type="scan_to_scan_filter_chain" output="screen" name="u_turn_laser_filter">
+	  <rosparam command="load" file="$(find u_turn)/launch/box_filter.yaml" />
+	  <remap from="scan_filtered" to="u_turn_scan_filtered"/>
+  </node>
+  
+
+  <node pkg="u_turn" name="u_turn" type="u_turn_path.py" output="screen">
+	  <param name="throttle" value="3" />
+	  <param name="max_theta" value="45" />
+	  <param name="lateral_offset" type="double" value="5.0" /> <!-- car: 0.6 -->
+	  <param name="theta_error_factor" type="double" value="1.2" />
+	  <param name="lateral_error_factor" type="double" value="60.0" />
+	  <param name="right_steer_scale" type="double" value="1.5" />
+	  <param name="left_steer_offset" value="6" />
+  </node>
+
+  <node name="u_turn_obstacle_extractor" pkg="obstacle_detector" type="obstacle_extractor_node">
+	<remap from="scan" to="u_turn_scan_filtered"/>
+    <param name="active"               value="true"/>
+    <param name="use_scan"             value="true"/>
+    <param name="use_pcl"              value="false"/>
+
+    <param name="use_split_and_merge"    value="true"/>
+    <param name="circles_from_visibles"  value="true"/>
+    <param name="discard_converted_segments" value="true"/>
+    <param name="transform_coordinates"  value="true"/>
+
+    <param name="min_group_points"     value="5"/>
+
+    <param name="max_group_distance"   value="0.1"/>
+    <param name="distance_proportion"  value="0.00628"/>
+    <param name="max_split_distance"   value="0.2"/>
+    <param name="max_merge_separation" value="0.6"/>
+    <param name="max_merge_spread"     value="0.2"/>
+    <param name="max_circle_radius"    value="0.6"/>
+    <param name="radius_enlargement"   value="0.3"/>
+
+    <param name="frame_id"             value="laser"/>
+  </node>
+
+  <!-- Crosswalk Stop -->
+	<node pkg="crosswalk_stop" type="crosswalk_stop" name="crosswalk_stop">
+		<!-- scale platform -->
+		<param name="throttle" value="3" />
+		<param name="angle_factor" type="double" value="1.0" />
+		<remap from="/crosswalk_stop/ackermann" to="ackermann" />
+	</node>
+
+</launch>
