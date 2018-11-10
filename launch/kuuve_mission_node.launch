@@ -1,0 +1,41 @@
+<launch>
+	<!-- Sensor -->
+	<node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+		<param name="video_device" value="/dev/video0" />
+		<param name="image_width" value="640" />
+		<param name="image_height" value="480" />
+		<param name="pixel_format" value="yuyv" />
+		<param name="camera_frame_id" value="usb_cam" />
+		<param name="io_method" value="mmap"/>
+		<param name="framerate" value="30"/>
+	</node>
+
+    <!-- platform_control-->
+    <!--<node pkg="platform_control" type="write_serial" name="write_serial" />-->
+
+	<!-- Mission -->
+	<node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_light" output="screen">
+		<param name="box_class" type="str" value="Go"/>
+		<param name="box_probability" type="double" value="80.0"/>
+	</node>
+
+	<node pkg="mission_node_stub" type="mission_node_stub.py" name="narrow_path" output="screen"/>
+
+	<node pkg="mission_node_stub" type="mission_node_stub" name="lane_detector" output="screen" args="lane_detector"/>
+	
+	<!--
+	<include file="$(find mission_planner)/launch/mission/lane_detector.launch"/>
+	-->
+
+	<node pkg="mission_node_stub" type="mission_node_stub.py" name="u_turn_and_crosswalk_stop" output="screen"/>
+
+	<node pkg="mission_node_stub" type="mission_node_stub.py" name="car_tracking" output="screen"/>
+
+	<node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_ab" output="screen">
+		<param name="box_class" type="str" value="Parking_a"/>
+		<param name="box_probability" type="double" value="80.0"/>
+	</node>
+
+	<node pkg="mission_node_stub" type="mission_node_stub" name="parking" output="screen" args="parking"/>
+
+</launch>
