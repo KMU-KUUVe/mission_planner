@@ -42,7 +42,7 @@
   </node>
 
   <!-- Crosswalk Stop -->
-	<node pkg="crosswalk_stop" type="crosswalk_stop" name="crosswalk_stop">
+	<node pkg="crosswalk_stop" type="crosswalk_stop" name="crosswalk_stop" output="screen">
 		<!-- scale platform -->
 		<param name="throttle" value="3" />
 		<param name="angle_factor" type="double" value="1.0" />

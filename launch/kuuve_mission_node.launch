@@ -30,7 +30,8 @@
 	<include file="$(find mission_planner)/launch/mission/lane_detector.launch"/>
 	-->
 
-	<node pkg="mission_node_stub" type="mission_node_stub.py" name="u_turn_and_crosswalk_stop" output="screen"/>
+	<!--node pkg="mission_node_stub" type="mission_node_stub.py" name="u_turn_and_crosswalk_stop" output="screen"/-->
+	<include file="$(find mission_planner)/launch/mission/u_turn_and_crosswalk_stop.launch"/>
 
 	<node pkg="mission_node_stub" type="mission_node_stub.py" name="car_tracking" output="screen"/>
 
