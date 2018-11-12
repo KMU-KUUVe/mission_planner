@@ -14,7 +14,7 @@
 	<include file="$(find lms1xx)/launch/LMS1xx.launch"/>
 
 <!-- platform_control-->
-	<!--node pkg="platform_control" type="write_serial" name="write_serial" /-->
+	<node pkg="platform_control" type="write_serial" name="write_serial" />
 
 <!-- ### Mission ### -->
 	
