@@ -90,6 +90,7 @@ class TrafficLight(smach.State):
 		self.flag = 0
 		self.stage = stage
 		self.callback_flag = 0
+		self.is_callback = 0
 		self.min_prob = prob
 		self.traffic_light_count = standard_count
 		self.cur_count = 0
@@ -113,8 +114,11 @@ class TrafficLight(smach.State):
 			sign_type = bounding_box.Class
 			if probability > self.min_prob and sign_type == 'Go':
 				self.flag = 1
+				self.is_callback = 1
 
 	def execute(self, userdata):
+		start_time = rospy.Time.now()
+		dt = rospy.Duration(secs=12)
 		self.callback_flag = 1
 		rospack = rospkg.RosPack()
 		fr = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "r")
@@ -140,7 +144,13 @@ class TrafficLight(smach.State):
 					self.callback_flag = 0
 	
 					return 'finish'
+				end_time = rospy.Time.now()
+				if end_time - start_time > dt:
+					rospy.loginfo('cannot identify Go sign')
+					self.callback_flag = 0
+					return 'finish'
 				r.sleep()
+				
 		else:
 			rospy.loginfo('moving to interrupted state')
 			return 'finish'
@@ -183,6 +193,8 @@ class SignAB(smach.State):
 				self.flag = 2
 
 	def execute(self, userdata):
+		start_time = rospy.Time.now()
+		dt = rospy.Duration(secs=12)
 		self.callback_flag = 1
 		rospack = rospkg.RosPack()
 		fr = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "r")
@@ -217,6 +229,20 @@ class SignAB(smach.State):
 					userdata.sign_ab_output = 2
 					self.callback_flag = 0
 					return 'finish'
+				
+				end_time = rospy.Time.now()
+				
+				if end_time - start_time > dt:
+					rospy.loginfo('cannot identify ab sign')
+					if self.a_count < self.b_count:
+						userdata.sign_ab_output = 2
+						rospy.loginfo('Parking_b sign uncertainly identified')
+					else: 
+						userdata.sign_ab_output = 1
+						rospy.loginfo('Parking_a sign uncertainly identified')
+					self.callback_flag = 0
+					return 'finish'
+
 				r.sleep()
 		else:
 			rospy.loginfo('moving to interrupted state')
