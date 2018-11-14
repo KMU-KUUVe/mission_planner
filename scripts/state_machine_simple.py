@@ -189,7 +189,7 @@ class SignAB(smach.State):
 			sign_type = bounding_box.Class
 			if probability > self.min_prob and sign_type == 'Parking_a':
 				self.flag = 1
-			elif probabilty > self.min_prob and sign_type == 'Parking_b':
+			elif probability > self.min_prob and sign_type == 'Parking_b':
 				self.flag = 2
 
 	def execute(self, userdata):

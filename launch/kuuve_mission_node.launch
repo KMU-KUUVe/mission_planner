@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<launch>
+<!-- ### Sensor ### -->
+	<node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+		<param name="video_device" value="/dev/video0" />
+		<param name="image_width" value="640" />
+		<param name="image_height" value="480" />
+		<param name="pixel_format" value="yuyv" />
+		<param name="camera_frame_id" value="usb_cam" />
+		<param name="io_method" value="mmap"/>
+		<param name="framerate" value="30"/>
+	</node>
+
+	<include file="$(find lms1xx)/launch/LMS1xx.launch"/>
+
+<!-- platform_control-->
+	<node pkg="platform_control" type="write_serial" name="write_serial" />
+
+<!-- ### Mission ### -->
+	
+<!-- darknet ros -->
+	<node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_light" output="screen">
+		<param name="box_class" type="str" value="Go"/>
+		<param name="box_probability" type="double" value="80.0"/>
+	</node>
+
+
+<!-- narrow path -->
+	<node pkg="mission_node_stub" type="mission_node_stub.py" name="narrow_path" output="screen"/>
+	<!--include file="$(find narrow_path)/launch/mission.launch"/-->
+
+
+<!-- lane detector -->
+	<node pkg="mission_node_stub" type="mission_node_stub" name="lane_detector" output="screen" args="lane_detector"/>
+	<!--include file="$(find lane_detector)/launch/mission.launch"/-->
+
+
+<!-- u turn and crosswalk stop -->
+	<node pkg="mission_node_stub" type="mission_node_stub.py" name="u_turn_and_crosswalk_stop" output="screen"/>
+	<!--
+	<include file="$(find u_turn)/launch/mission.launch"/>
+	<include file="$(find crosswalk_stop)/launch/mission.launch"/>
+	-->
+
+
+<!-- car tracking -->
+	<node pkg="mission_node_stub" type="mission_node_stub.py" name="car_tracking" output="screen"/>
+	<!--
+	<include file="$(find car_tracking)/launch/mission.launch"/>
+	<include file="$(find target_lane)/launch/mission.launch"/>
+	-->
+
+<!-- darknet ros -->
+	<node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_ab" output="screen">
+		<param name="box_class" type="str" value="Parking_b"/>
+		<param name="box_probability" type="double" value="80.0"/>
+	</node>
+
+
+<!-- parking -->
+	<node pkg="mission_node_stub" type="mission_node_stub" name="parking" output="screen" args="parking"/>
+	<!--include file="$(find parking)/launch/mission.launch"/-->
+
+</launch>
