@@ -131,7 +131,7 @@ class TrafficLight(smach.State):
 			fw = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "w")
 			fw.write(str(self.stage + 1))
 			fw.close()
-			subscriber = rospy.Subscriber('/usb_cam/image_raw', Image, self.imageCallback)
+			subscriber = rospy.Subscriber('/sign_usb_cam/image_raw', Image, self.imageCallback)
 			rospy.loginfo('executing trafficlight classification')
 			r = rospy.Rate(100)
 			while not rospy.is_shutdown():
@@ -207,7 +207,7 @@ class SignAB(smach.State):
 			fw = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "w")
 			fw.write(str(self.stage + 1))
 			fw.close()
-			self.subscriber = rospy.Subscriber('/usb_cam/image_raw', Image, self.imageCallback)
+			self.subscriber = rospy.Subscriber('/sign_usb_cam/image_raw', Image, self.imageCallback)
 			rospy.loginfo('executing parking_sign classification')
 			r = rospy.Rate(100)
 			while not rospy.is_shutdown():

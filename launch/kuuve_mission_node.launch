@@ -11,6 +11,16 @@
 		<param name="framerate" value="30"/>
 	</node>
 
+	<node name="sign_usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" >
+		<param name="video_device" value="/dev/video1" />
+		<param name="image_width" value="640" />
+		<param name="image_height" value="480" />
+		<param name="pixel_format" value="yuyv" />
+		<param name="camera_frame_id" value="usb_cam" />
+		<param name="io_method" value="mmap"/>
+		<param name="framerate" value="30"/>
+	</node>
+
 	<include file="$(find lms1xx)/launch/LMS1xx.launch"/>
 
 <!-- platform_control-->
@@ -18,11 +28,13 @@
 
 <!-- ### Mission ### -->
 	
+<!--include file="$(find darknet_ros)/launch/yolo_v3-custom.launch"/-->
+
 <!-- darknet ros -->
-	<node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_light" output="screen">
+	<!--node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_light" output="screen">
 		<param name="box_class" type="str" value="Go"/>
 		<param name="box_probability" type="double" value="80.0"/>
-	</node>
+	</node-->
 
 
 <!-- narrow path -->
@@ -44,11 +56,9 @@
 
 
 <!-- car tracking -->
-	<node pkg="mission_node_stub" type="mission_node_stub.py" name="car_tracking" output="screen"/>
-	<!--
+	<!--node pkg="mission_node_stub" type="mission_node_stub.py" name="car_tracking" output="screen"/-->
 	<include file="$(find car_tracking)/launch/mission.launch"/>
 	<include file="$(find target_lane)/launch/mission.launch"/>
-	-->
 
 <!-- darknet ros -->
 	<node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_ab" output="screen">
@@ -58,7 +68,7 @@
 
 
 <!-- parking -->
-	<node pkg="mission_node_stub" type="mission_node_stub" name="parking" output="screen" args="parking"/>
-	<!--include file="$(find parking)/launch/mission.launch"/-->
+	<!--node pkg="mission_node_stub" type="mission_node_stub" name="parking" output="screen" args="parking"/-->
+	<include file="$(find parking)/launch/mission.launch"/>
 
 </launch>
