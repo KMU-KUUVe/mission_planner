@@ -84,7 +84,7 @@ class Parking(smach.State):
 			return 'finish'	
 
 class TrafficLight(smach.State):
-	def __init__(self, client_name, stage, prob, standard_count):
+	def __init__(self, client_name, stage, prob, standard_count, deadline_time):
 		smach.State.__init__(self, outcomes=['finish'])
 		self.client_name = client_name
 		self.flag = 0
@@ -118,7 +118,7 @@ class TrafficLight(smach.State):
 
 	def execute(self, userdata):
 		start_time = rospy.Time.now()
-		dt = rospy.Duration(secs=12)
+		dt = rospy.Duration(secs=deadline_time)
 		self.callback_flag = 1
 		rospack = rospkg.RosPack()
 		fr = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "r")
@@ -194,7 +194,7 @@ class SignAB(smach.State):
 
 	def execute(self, userdata):
 		start_time = rospy.Time.now()
-		dt = rospy.Duration(secs=12)
+		dt = rospy.Duration(secs=8)
 		self.callback_flag = 1
 		rospack = rospkg.RosPack()
 		fr = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "r")
@@ -261,6 +261,9 @@ def main():
 	car_tracking_stage = rospy.get_param('~car_tracking_stage')
 	sign_ab_stage = rospy.get_param('~sign_ab_stage')
 	parking_stage = rospy.get_param('~parking_stage')
+
+	start_traffic_deadline_time = 12
+	crosswalk_traffic_deadline_time = 8
 	
 	#create a smach state machine
 	sm = smach.StateMachine(outcomes=['success'])
@@ -269,7 +272,7 @@ def main():
 	#open the container
 	#change darknet_ros_light -> darknet_ros
 	with sm:
-		smach.StateMachine.add('mission_start',TrafficLight('darknet_ros_light', mission_start_stage, probability, standard_count), transitions= 
+		smach.StateMachine.add('mission_start',TrafficLight('darknet_ros_light', mission_start_stage, probability, standard_count, start_traffic_deadline_time), transitions= 
 {'finish':'narrow_path'})
 		smach.StateMachine.add('narrow_path',CommonMission('narrow_path', narrow_path_stage), transitions = 
 {'finish':'lane_detector'})
@@ -277,7 +280,7 @@ def main():
 {'finish':'u_turn'})
 		smach.StateMachine.add('u_turn',CommonMission('u_turn_and_crosswalk_stop', u_turn_stage), transitions =
 {'finish':'wait_traffic_light'})
-		smach.StateMachine.add('wait_traffic_light',TrafficLight('darknet_ros_light',  wait_traffic_light_stage, probability, standard_count), transitions = {'finish':'car_tracking'})
+		smach.StateMachine.add('wait_traffic_light',TrafficLight('darknet_ros_light',  wait_traffic_light_stage, probability, standard_count, crosswalk_traffic_deadline_time), transitions = {'finish':'car_tracking'})
 		smach.StateMachine.add('car_tracking',CommonMission('car_tracking', car_tracking_stage), transitions = {'finish':'sign_ab'})
 		smach.StateMachine.add('sign_ab',SignAB('darknet_ros_ab', sign_ab_stage, probability, standard_count), transitions = 
 {'finish':'parking'}, remapping = {'sign_ab_output':'sm_counter'})
