@@ -94,8 +94,10 @@ class TrafficLight(smach.State):
 		self.min_prob = prob
 		self.traffic_light_count = standard_count
 		self.cur_count = 0
+		self.deadline_time = deadline_time
 	def imageCallback(self, data):
 		if self.callback_flag == 1:
+			rospy.sleep(0.2)
 			client = actionlib.SimpleActionClient(self.client_name, CheckForObjectsAction)
 			client.wait_for_server()
 			goal = CheckForObjectsGoal()
@@ -108,17 +110,17 @@ class TrafficLight(smach.State):
 
 			result = client.get_result()
 			rospy.loginfo('%s get result'%self.client_name)
-
-			bounding_box = result.bounding_boxes.bounding_boxes[0]
-			probability = bounding_box.probability
-			sign_type = bounding_box.Class
-			if probability > self.min_prob and sign_type == 'Go':
-				self.flag = 1
-				self.is_callback = 1
+			if len(result.bounding_boxes.bounding_boxes) > 0:
+				bounding_box = result.bounding_boxes.bounding_boxes[0]
+				probability = bounding_box.probability * 100
+				sign_type = bounding_box.Class
+				if probability > self.min_prob and sign_type == 'Go':
+					self.flag = 1
+					self.is_callback = 1
 
 	def execute(self, userdata):
 		start_time = rospy.Time.now()
-		dt = rospy.Duration(secs=deadline_time)
+		dt = rospy.Duration(secs=self.deadline_time)
 		self.callback_flag = 1
 		rospack = rospkg.RosPack()
 		fr = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "r")
@@ -131,7 +133,7 @@ class TrafficLight(smach.State):
 			fw = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "w")
 			fw.write(str(self.stage + 1))
 			fw.close()
-			subscriber = rospy.Subscriber('/sign_usb_cam/image_raw', Image, self.imageCallback)
+			subscriber = rospy.Subscriber('/sign_usb_cam/image_raw', Image, self.imageCallback, queue_size=1)
 			rospy.loginfo('executing trafficlight classification')
 			r = rospy.Rate(100)
 			while not rospy.is_shutdown():
@@ -172,6 +174,7 @@ class SignAB(smach.State):
 
 	def imageCallback(self, data):
 		if self.callback_flag == 1:	
+			rospy.sleep(0.2)
 			client = actionlib.SimpleActionClient(self.client_name, CheckForObjectsAction)
 			client.wait_for_server()
 			goal = CheckForObjectsGoal()
@@ -182,15 +185,15 @@ class SignAB(smach.State):
 
 			client.wait_for_result()
 
-			result = client.get_result()
-
-			bounding_box = result.bounding_boxes.bounding_boxes[0]
-			probability = bounding_box.probability
-			sign_type = bounding_box.Class
-			if probability > self.min_prob and sign_type == 'Parking_a':
-				self.flag = 1
-			elif probability > self.min_prob and sign_type == 'Parking_b':
-				self.flag = 2
+			result = client.get_result() 
+			if len(result.bounding_boxes.bounding_boxes) > 0:
+				bounding_box = result.bounding_boxes.bounding_boxes[0]
+				probability = bounding_box.probability * 100
+				sign_type = bounding_box.Class
+				if probability > self.min_prob and sign_type == 'A_parking':
+					self.flag = 1
+				elif probability > self.min_prob and sign_type == 'B_parking':
+					self.flag = 2
 
 	def execute(self, userdata):
 		start_time = rospy.Time.now()
@@ -207,7 +210,7 @@ class SignAB(smach.State):
 			fw = open(rospack.get_path('mission_planner') + '/scripts/state_stage.txt', "w")
 			fw.write(str(self.stage + 1))
 			fw.close()
-			self.subscriber = rospy.Subscriber('/sign_usb_cam/image_raw', Image, self.imageCallback)
+			self.subscriber = rospy.Subscriber('/sign_usb_cam/image_raw', Image, self.imageCallback, queue_size=1)
 			rospy.loginfo('executing parking_sign classification')
 			r = rospy.Rate(100)
 			while not rospy.is_shutdown():
@@ -263,7 +266,7 @@ def main():
 	parking_stage = rospy.get_param('~parking_stage')
 
 	start_traffic_deadline_time = 12
-	crosswalk_traffic_deadline_time = 8
+	crosswalk_traffic_deadline_time = 15
 	
 	#create a smach state machine
 	sm = smach.StateMachine(outcomes=['success'])
@@ -272,7 +275,7 @@ def main():
 	#open the container
 	#change darknet_ros_light -> darknet_ros
 	with sm:
-		smach.StateMachine.add('mission_start',TrafficLight('darknet_ros_light', mission_start_stage, probability, standard_count, start_traffic_deadline_time), transitions= 
+		smach.StateMachine.add('mission_start',TrafficLight('/darknet_ros/check_for_objects', mission_start_stage, probability, standard_count, start_traffic_deadline_time), transitions= 
 {'finish':'narrow_path'})
 		smach.StateMachine.add('narrow_path',CommonMission('narrow_path', narrow_path_stage), transitions = 
 {'finish':'lane_detector'})
@@ -280,9 +283,9 @@ def main():
 {'finish':'u_turn'})
 		smach.StateMachine.add('u_turn',CommonMission('u_turn_and_crosswalk_stop', u_turn_stage), transitions =
 {'finish':'wait_traffic_light'})
-		smach.StateMachine.add('wait_traffic_light',TrafficLight('darknet_ros_light',  wait_traffic_light_stage, probability, standard_count, crosswalk_traffic_deadline_time), transitions = {'finish':'car_tracking'})
+		smach.StateMachine.add('wait_traffic_light',TrafficLight('/darknet_ros/check_for_objects',  wait_traffic_light_stage, probability, standard_count, crosswalk_traffic_deadline_time), transitions = {'finish':'car_tracking'})
 		smach.StateMachine.add('car_tracking',CommonMission('car_tracking', car_tracking_stage), transitions = {'finish':'sign_ab'})
-		smach.StateMachine.add('sign_ab',SignAB('darknet_ros_ab', sign_ab_stage, probability, standard_count), transitions = 
+		smach.StateMachine.add('sign_ab',SignAB('/darknet_ros/check_for_objects', sign_ab_stage, probability, standard_count), transitions = 
 {'finish':'parking'}, remapping = {'sign_ab_output':'sm_counter'})
 		smach.StateMachine.add('parking',Parking('parking', parking_stage), transitions = 
 {'finish':'success'}, remapping	= {'sign_ab_input':'sm_counter'})

@@ -28,7 +28,7 @@
 
 <!-- ### Mission ### -->
 	
-<!--include file="$(find darknet_ros)/launch/yolo_v3-custom.launch"/-->
+	<include file="$(find darknet_ros)/launch/yolo_v3-custom.launch"/>
 
 <!-- darknet ros -->
 	<!--node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_light" output="screen">
@@ -38,21 +38,19 @@
 
 
 <!-- narrow path -->
-	<node pkg="mission_node_stub" type="mission_node_stub.py" name="narrow_path" output="screen"/>
-	<!--include file="$(find narrow_path)/launch/mission.launch"/-->
+	<!--node pkg="mission_node_stub" type="mission_node_stub.py" name="narrow_path" output="screen"/-->
+	<include file="$(find narrow_path)/launch/mission.launch"/>
 
 
 <!-- lane detector -->
-	<node pkg="mission_node_stub" type="mission_node_stub" name="lane_detector" output="screen" args="lane_detector"/>
-	<!--include file="$(find lane_detector)/launch/mission.launch"/-->
+	<!--node pkg="mission_node_stub" type="mission_node_stub" name="lane_detector" output="screen" args="lane_detector"/-->
+	<include file="$(find lane_detector)/launch/mission.launch"/>
 
 
 <!-- u turn and crosswalk stop -->
-	<node pkg="mission_node_stub" type="mission_node_stub.py" name="u_turn_and_crosswalk_stop" output="screen"/>
-	<!--
+	<!--node pkg="mission_node_stub" type="mission_node_stub.py" name="u_turn_and_crosswalk_stop" output="screen"/-->
 	<include file="$(find u_turn)/launch/mission.launch"/>
 	<include file="$(find crosswalk_stop)/launch/mission.launch"/>
-	-->
 
 
 <!-- car tracking -->
@@ -61,10 +59,11 @@
 	<include file="$(find target_lane)/launch/mission.launch"/>
 
 <!-- darknet ros -->
-	<node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros_ab" output="screen">
-		<param name="box_class" type="str" value="Parking_b"/>
+	<!--node pkg="mission_node_stub" type="sign_node_stub.py" name="darknet_ros" output="screen">
+		<param name="topic" type="str" value="/darknet_ros/check_for_objects"/>
+		<param name="box_class" type="str" value="B_parking"/>
 		<param name="box_probability" type="double" value="80.0"/>
-	</node>
+	</node-->
 
 
 <!-- parking -->
